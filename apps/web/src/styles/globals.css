@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Brand Colors ── */
+  --color-brand-primary: #00857A;
+  --color-brand-primary-strong: #006C63;
+  --color-brand-secondary: #4CB7A5;
+  --color-brand-soft-bg: #EAF7F4;
+  --color-brand-mint-border: #B9DFD8;
+
+  /* ── Neutral Palette ── */
+  --color-neutral-0: #FFFFFF;
+  --color-neutral-50: #F6F8F8;
+  --color-neutral-100: #EEF2F2;
+  --color-neutral-200: #D9E3E1;
+  --color-neutral-300: #B8C5C2;
+  --color-neutral-500: #667572;
+  --color-neutral-700: #2C3736;
+  --color-neutral-900: #172120;
+
+  /* ── Semantic Colors ── */
+  --color-semantic-success: #1F9D6A;
+  --color-semantic-warning: #C98A00;
+  --color-semantic-danger: #D9534F;
+  --color-semantic-info: #2F6FED;
+
+  /* ── Score Colors ── */
+  --color-score-excellent: #1F9D6A;
+  --color-score-good: #4CB7A5;
+  --color-score-average: #C98A00;
+  --color-score-low: #D97706;
+  --color-score-poor: #D9534F;
+
+  /* ── Border Radius ── */
+  --radius-financial: 8px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* ── Font Family ── */
+  --font-sans: "Pretendard Variable", "Noto Sans KR", system-ui, sans-serif;
+
+  /* ── shadcn/ui CSS Variables ── */
+  --color-background: var(--color-neutral-0);
+  --color-foreground: var(--color-neutral-900);
+  --color-card: var(--color-neutral-0);
+  --color-card-foreground: var(--color-neutral-900);
+  --color-popover: var(--color-neutral-0);
+  --color-popover-foreground: var(--color-neutral-900);
+  --color-primary: var(--color-brand-primary);
+  --color-primary-foreground: var(--color-neutral-0);
+  --color-secondary: var(--color-neutral-100);
+  --color-secondary-foreground: var(--color-neutral-900);
+  --color-muted: var(--color-neutral-100);
+  --color-muted-foreground: var(--color-neutral-500);
+  --color-accent: var(--color-brand-soft-bg);
+  --color-accent-foreground: var(--color-brand-primary-strong);
+  --color-destructive: var(--color-semantic-danger);
+  --color-destructive-foreground: var(--color-neutral-0);
+  --color-border: var(--color-neutral-200);
+  --color-input: var(--color-neutral-200);
+  --color-ring: var(--color-brand-primary);
+
+  /* ── Sidebar ── */
+  --color-sidebar: var(--color-neutral-50);
+  --color-sidebar-foreground: var(--color-neutral-700);
+  --color-sidebar-primary: var(--color-brand-primary);
+  --color-sidebar-primary-foreground: var(--color-neutral-0);
+  --color-sidebar-accent: var(--color-brand-soft-bg);
+  --color-sidebar-accent-foreground: var(--color-brand-primary-strong);
+  --color-sidebar-border: var(--color-neutral-200);
+  --color-sidebar-ring: var(--color-brand-primary);
+
+  /* ── Chart ── */
+  --color-chart-1: var(--color-brand-primary);
+  --color-chart-2: var(--color-brand-secondary);
+  --color-chart-3: var(--color-semantic-info);
+  --color-chart-4: var(--color-semantic-warning);
+  --color-chart-5: var(--color-semantic-success);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}

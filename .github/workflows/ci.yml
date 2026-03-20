@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      api: ${{ steps.filter.outputs.api }}
+      ai-worker: ${{ steps.filter.outputs.ai-worker }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'apps/web/**'
+              - 'packages/**'
+            api:
+              - 'apps/api/**'
+            ai-worker:
+              - 'apps/ai-worker/**'
+
+  ci-web:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad1dd2 # v4.0.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter web lint
+
+      - name: Type Check
+        run: pnpm --filter web type-check
+
+      - name: Build
+        run: pnpm --filter web build
+
+  ci-api:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.api == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: astral-sh/setup-uv@6b9c6063abd6010835c3c7f69661e473e89220eb # v6.0.1
+        with:
+          version: "latest"
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: uv sync --dev
+
+      - name: Lint
+        working-directory: apps/api
+        run: uv run ruff check .
+
+      - name: Type Check
+        working-directory: apps/api
+        run: uv run mypy app/
+
+  ci-ai-worker:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.ai-worker == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: astral-sh/setup-uv@6b9c6063abd6010835c3c7f69661e473e89220eb # v6.0.1
+        with:
+          version: "latest"
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: apps/ai-worker
+        run: uv sync --dev
+
+      - name: Lint
+        working-directory: apps/ai-worker
+        run: uv run ruff check .
+
+      - name: Type Check
+        working-directory: apps/ai-worker
+        run: uv run mypy app/

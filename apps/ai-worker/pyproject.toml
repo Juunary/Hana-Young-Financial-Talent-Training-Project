@@ -1,0 +1,38 @@
+[project]
+name = "skill-finance-ai-worker"
+version = "0.1.0"
+description = "Skill Finance Score AI Evaluation Worker"
+requires-python = ">=3.12"
+dependencies = [
+    "celery[redis]>=5.5.0",
+    "pydantic-ai>=0.2.0",
+    "pydantic>=2.11.0",
+    "sqlalchemy[asyncio]>=2.0.40",
+    "asyncpg>=0.30.0",
+    "redis>=6.2.0",
+    "httpx>=0.28.0",
+    "pyyaml>=6.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=1.0.0",
+    "ruff>=0.11.0",
+    "mypy>=1.15.0",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

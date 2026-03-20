@@ -1,0 +1,12 @@
+{
+  "name": "ai-worker",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "uv run celery -A app.celery_app worker -l info",
+    "lint": "uv run ruff check .",
+    "lint:fix": "uv run ruff check --fix .",
+    "type-check": "uv run mypy app/",
+    "test": "uv run pytest"
+  }
+}

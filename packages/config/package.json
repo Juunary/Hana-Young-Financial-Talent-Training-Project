@@ -1,0 +1,9 @@
+{
+  "name": "@skill-finance/config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./tailwind/preset.ts",
+  "exports": {
+    "./tailwind": "./tailwind/preset.ts"
+  }
+}
