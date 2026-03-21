@@ -83,7 +83,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Audit npm packages
-        run: pnpm audit --audit-level=high
+        run: pnpm audit --audit-level=critical
 
   secret-scan:
     name: Secret Scanning

@@ -24,8 +24,6 @@ jobs:
   deploy-preview:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
-    outputs:
-      preview_url: ${{ steps.deploy.outputs.preview-url }}
 
     steps:
       - name: Checkout
@@ -33,7 +31,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-        # package.json의 packageManager 필드 자동 사용
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -46,21 +43,23 @@ jobs:
 
       - name: Deploy to Vercel
         id: deploy
-        uses: amondnet/vercel-action@16de52a678f322c2c4e693eb1b0cebe6754e456d # v25.2.0
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./apps/web
-          # main 브랜치는 프로덕션, 나머지는 미리보기
-          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          pnpm dlx vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=$VERCEL_TOKEN
+          pnpm dlx vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=$VERCEL_TOKEN
+          DEPLOY_URL=$(pnpm dlx vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=$VERCEL_TOKEN)
+          echo "preview_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
-            const url = '${{ steps.deploy.outputs.preview-url }}';
+            const url = '${{ steps.deploy.outputs.preview_url }}';
             const sha = context.payload.pull_request.head.sha.substring(0, 7);
             const body = [
               '## 🔗 Vercel 미리보기 배포',
@@ -74,7 +73,6 @@ jobs:
               '> ⚠️ 이 환경은 프로토타입 시뮬레이션입니다. 백엔드 API 없이는 인증 이후 기능이 동작하지 않을 수 있습니다.',
             ].join('\n');
 
-            // 기존 봇 댓글이 있으면 업데이트, 없으면 새로 작성
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
