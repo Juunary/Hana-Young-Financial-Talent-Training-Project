@@ -60,7 +60,7 @@ function NavSection({ title, items }: { title: string; items: NavItem[] }) {
 
   return (
     <div className="space-y-1">
-      <p className="text-muted-foreground px-3 py-2 text-xs font-semibold uppercase tracking-wider">
+      <p className="text-neutral-400 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest">
         {title}
       </p>
       {items.map((item) => {
@@ -70,10 +70,10 @@ function NavSection({ title, items }: { title: string; items: NavItem[] }) {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center gap-3 rounded-financial px-3 py-2 text-sm font-medium transition-colors",
+              "flex items-center gap-3 px-3 py-1.5 text-sm font-medium transition-colors",
               isActive
-                ? "bg-brand-soft-bg text-brand-primary"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                ? "border-l-2 border-brand-primary bg-brand-soft-bg text-brand-primary pl-2.5"
+                : "text-muted-foreground hover:bg-neutral-100 hover:text-foreground [&_svg]:opacity-60",
             )}
           >
             {item.icon}
@@ -96,7 +96,7 @@ export function SideNavigation({ isOpen, onClose }: SideNavigationProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "bg-sidebar border-sidebar-border fixed left-0 top-16 z-40 flex h-[calc(100vh-4rem)] w-64 flex-col border-r transition-transform duration-200 lg:translate-x-0",
+          "bg-white border-r border-neutral-200 fixed left-0 top-14 z-40 flex h-[calc(100vh-3.5rem)] w-64 flex-col transition-transform duration-200 lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >

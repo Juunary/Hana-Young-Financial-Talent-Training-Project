@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { isDemoMode } from "@/lib/demo-data";
 
+import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { SideNavigation } from "./SideNavigation";
 
@@ -21,16 +22,19 @@ export function AppShell({ children, userName, userEmail }: AppShellProps) {
   const displayEmail = userEmail ?? (demo ? "demo@hanayoung.kr" : undefined);
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-neutral-50 min-h-screen flex flex-col">
       <Header
         userName={displayName}
         userEmail={displayEmail}
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
       />
       <SideNavigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <main className="lg:pl-64">
-        <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8">{children}</div>
+      <main className="lg:pl-64 flex-1">
+        <div className="mx-auto max-w-7xl px-4 py-5 lg:px-8">{children}</div>
       </main>
+      <div className="lg:pl-64">
+        <Footer />
+      </div>
     </div>
   );
 }

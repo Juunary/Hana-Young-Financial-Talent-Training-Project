@@ -3,18 +3,33 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+// 금융권 상태 배지: rounded-sm(2px), 모든 variant에 border, pill 금지
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-sm border px-2 py-0.5 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1",
   {
     variants: {
       variant: {
+        // 기본 (브랜드 그린)
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+          "border-brand-primary/25 bg-brand-soft-bg text-brand-primary-strong",
+        // 중립 보조
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-neutral-200 bg-neutral-100 text-neutral-700",
+        // 오류/삭제
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+          "border-red-200 bg-red-50 text-red-700",
+        // 외곽선만
+        outline:
+          "border-border bg-transparent text-foreground",
+        // 성공/완료
+        success:
+          "border-green-200 bg-green-50 text-green-700",
+        // 주의/경고
+        warning:
+          "border-amber-200 bg-amber-50 text-amber-700",
+        // 진행중/처리중
+        processing:
+          "border-blue-200 bg-blue-50 text-blue-700",
       },
     },
     defaultVariants: {

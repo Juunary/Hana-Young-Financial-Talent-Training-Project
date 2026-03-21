@@ -50,58 +50,75 @@ export function Header({ userName, userEmail, onMenuToggle, showMenuButton = tru
     : "U";
 
   return (
-    <header className="border-border bg-card sticky top-0 z-50 flex h-16 items-center border-b px-4 lg:px-6">
-      <div className="flex flex-1 items-center gap-4">
-        {showMenuButton && (
-          <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuToggle}>
-            <Menu className="h-5 w-5" />
-          </Button>
-        )}
-
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="bg-brand-primary flex h-8 w-8 items-center justify-center rounded-financial text-sm font-bold text-white">
-            SF
-          </div>
-          <span className="text-foreground hidden text-lg font-semibold sm:inline-block">
-            Skill Finance Score
+    <header>
+      {/* Utility Strip */}
+      <div className="hidden sm:flex h-8 items-center border-b border-neutral-200 bg-neutral-50 px-4 lg:px-6">
+        <div className="flex w-full items-center justify-between">
+          <span className="flex items-center gap-3 text-xs text-neutral-500">
+            <span>🔒 보안접속</span>
+            <span>·</span>
+            <span>고객센터</span>
+            <span>·</span>
+            <span>도움말</span>
           </span>
-        </Link>
+          <span className="text-xs text-neutral-400">프로토타입 서비스</span>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-brand-soft-bg text-brand-primary text-sm font-medium">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+      {/* Main Header */}
+      <div className="border-border bg-white sticky top-0 z-50 flex h-14 items-center border-b px-4 lg:px-6">
+        <div className="flex flex-1 items-center gap-4">
+          {showMenuButton && (
+            <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuToggle}>
+              <Menu className="h-5 w-5" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end">
-            <div className="flex items-center gap-2 p-2">
-              <div className="flex flex-col space-y-1">
-                {userName && <p className="text-sm font-medium leading-none">{userName}</p>}
-                {userEmail && (
-                  <p className="text-muted-foreground text-xs leading-none">{userEmail}</p>
-                )}
-              </div>
+          )}
+
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="bg-brand-primary flex h-8 w-8 items-center justify-center rounded-sm text-sm font-bold text-white">
+              SF
             </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/onboarding/profile" className="flex items-center">
-                <User className="mr-2 h-4 w-4" />
-                프로필 설정
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="text-semantic-danger">
-              <LogOut className="mr-2 h-4 w-4" />
-              로그아웃
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <span className="text-foreground hidden text-base font-semibold sm:inline-block">
+              Skill Finance Score
+            </span>
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="bg-brand-soft-bg text-brand-primary text-xs font-medium">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end">
+              <div className="flex items-center gap-2 p-2">
+                <div className="flex flex-col space-y-1">
+                  {userName && <p className="text-sm font-medium leading-none">{userName}</p>}
+                  {userEmail && (
+                    <p className="text-muted-foreground text-xs leading-none">{userEmail}</p>
+                  )}
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/onboarding/profile" className="flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  프로필 설정
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-semantic-danger">
+                <LogOut className="mr-2 h-4 w-4" />
+                로그아웃
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );

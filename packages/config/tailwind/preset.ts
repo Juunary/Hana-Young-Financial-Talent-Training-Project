@@ -11,13 +11,13 @@ export const skillFinancePreset = {
         },
         neutral: {
           "0": "#FFFFFF",
-          "50": "#F6F8F8",
-          "100": "#EEF2F2",
-          "200": "#D9E3E1",
-          "300": "#B8C5C2",
-          "500": "#667572",
-          "700": "#2C3736",
-          "900": "#172120",
+          "50": "#F5F6F7",   // page background
+          "100": "#ECEEF0",  // surface / muted bg
+          "200": "#D1D5DB",  // border / divider (더 선명)
+          "300": "#9CA3AF",  // placeholder / disabled text
+          "500": "#6B7280",  // secondary text
+          "700": "#374151",  // primary text (부드럽게)
+          "900": "#111827",  // darkest text
         },
         semantic: {
           success: "#1F9D6A",
@@ -42,7 +42,23 @@ export const skillFinancePreset = {
         ],
       },
       borderRadius: {
-        financial: "8px",
+        "financial-xs": "2px",   // 최소 (상태 배지)
+        "financial-sm": "4px",   // 버튼 / 입력창
+        financial: "6px",        // 기본 (카드 border-first)
+        "financial-md": "8px",   // 패널
+        "financial-lg": "12px",  // 모달 / 시트
+      },
+      boxShadow: {
+        card: "0 1px 2px rgba(0,0,0,0.05)",
+        panel: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+        "panel-md": "0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03)",
+      },
+      fontSize: {
+        "banking-xs": ["11px", { lineHeight: "1.5" }],
+        "banking-sm": ["12px", { lineHeight: "1.5" }],
+        "banking-base": ["13px", { lineHeight: "1.6" }],
+        "banking-md": ["14px", { lineHeight: "1.6" }],
+        "banking-lg": ["16px", { lineHeight: "1.5" }],
       },
     },
   },
