@@ -1,3 +1,4 @@
+import os
 from collections.abc import AsyncGenerator
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -5,9 +6,11 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.db.session import get_db
-from app.main import app
-from app.models.base import Base
+os.environ.setdefault("DEBUG", "true")  # Disable Secure flag on cookies for http://test
+
+from app.db.session import get_db  # noqa: E402
+from app.main import app  # noqa: E402
+from app.models.base import Base  # noqa: E402
 
 # In-memory SQLite for tests (async)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"

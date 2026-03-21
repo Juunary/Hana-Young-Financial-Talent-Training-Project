@@ -1,0 +1,95 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com
+
+jobs:
+  db-migration:
+    name: Run DB Migrations (Production)
+    runs-on: ubuntu-latest
+    environment: production   # ← requires manual approval gate
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bd01e18f51369d5a26f1651c3cb451d3417e3bba # v5.4.1
+
+      - name: Run Alembic migrations
+        working-directory: apps/api
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: uv run alembic upgrade head
+
+  deploy:
+    name: Deploy to ECS (Production)
+    needs: db-migration
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN_PROD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy API service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@3e7310352de8b7b84ef5b89b56bd07a7c8a65e47 # v2.3.1
+        with:
+          task-definition: ${{ secrets.ECS_TASK_DEF_API_PROD }}
+          service: skillfinance-api-prod
+          cluster: skillfinance-prod
+          image: ${{ env.ECR_REGISTRY }}/skillfinance-api:${{ github.sha }}
+          container-name: api
+          wait-for-service-stability: true
+
+      - name: Deploy Web service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@3e7310352de8b7b84ef5b89b56bd07a7c8a65e47 # v2.3.1
+        with:
+          task-definition: ${{ secrets.ECS_TASK_DEF_WEB_PROD }}
+          service: skillfinance-web-prod
+          cluster: skillfinance-prod
+          image: ${{ env.ECR_REGISTRY }}/skillfinance-web:${{ github.sha }}
+          container-name: web
+          wait-for-service-stability: true
+
+      - name: Deploy AI Worker service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@3e7310352de8b7b84ef5b89b56bd07a7c8a65e47 # v2.3.1
+        with:
+          task-definition: ${{ secrets.ECS_TASK_DEF_WORKER_PROD }}
+          service: skillfinance-ai-worker-prod
+          cluster: skillfinance-prod
+          image: ${{ env.ECR_REGISTRY }}/skillfinance-ai-worker:${{ github.sha }}
+          container-name: ai-worker
+          wait-for-service-stability: true
+
+  smoke-test:
+    name: Smoke Tests (Production)
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health check
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.PROD_API_URL }}/api/v1/health")
+          if [ "$STATUS" != "200" ]; then
+            echo "Production health check FAILED: $STATUS"
+            exit 1
+          fi
+          echo "Production health check passed"

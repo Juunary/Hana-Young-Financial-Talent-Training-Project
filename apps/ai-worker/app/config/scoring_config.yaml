@@ -1,0 +1,74 @@
+version: "1.0.0"
+prompt_version: "1.0.0"
+
+factors:
+  academic:
+    display_name: "학업 역량"
+    max_score: 15
+    sub_criteria:
+      gpa_normalized: { weight: 0.6, description: "학점 (4.5 스케일 정규화)" }
+      major_relevance: { weight: 0.4, description: "전공 관련성" }
+
+  project:
+    display_name: "프로젝트 깊이"
+    max_score: 25
+    sub_criteria:
+      complexity: { weight: 0.3, description: "기술적 난이도" }
+      tech_diversity: { weight: 0.3, description: "기술 스택 다양성" }
+      outcome: { weight: 0.4, description: "결과물/성과" }
+
+  internship:
+    display_name: "실무 경험"
+    max_score: 20
+    sub_criteria:
+      duration: { weight: 0.3 }
+      relevance: { weight: 0.4 }
+      responsibility: { weight: 0.3 }
+
+  certification:
+    display_name: "자격/인증"
+    max_score: 10
+    sub_criteria:
+      level: { weight: 0.5 }
+      relevance: { weight: 0.5 }
+
+  portfolio:
+    display_name: "포트폴리오"
+    max_score: 15
+    sub_criteria:
+      quality: { weight: 0.5 }
+      diversity: { weight: 0.3 }
+      presentation: { weight: 0.2 }
+
+  github:
+    display_name: "GitHub 활동"
+    max_score: 10
+    sub_criteria:
+      contribution_consistency: { weight: 0.4 }
+      project_quality: { weight: 0.3 }
+      community_engagement: { weight: 0.3 }
+
+  consistency:
+    display_name: "일관성/완성도"
+    max_score: 5
+    sub_criteria:
+      data_completeness: { weight: 0.5 }
+      narrative_coherence: { weight: 0.5 }
+
+grade_thresholds:
+  S: 90
+  "A+": 85
+  A: 80
+  "B+": 70
+  B: 60
+  "C+": 50
+  C: 40
+  D: 0
+
+loan_simulation:
+  disclaimer: "본 결과는 프로토타입 시뮬레이션이며, 실제 금융기관의 대출 심사와 무관합니다."
+  ranges:
+    - { min_score: 80, min_amount: 30000000, max_amount: 50000000 }
+    - { min_score: 60, min_amount: 15000000, max_amount: 30000000 }
+    - { min_score: 40, min_amount: 5000000, max_amount: 15000000 }
+    - { min_score: 0, min_amount: 1000000, max_amount: 5000000 }

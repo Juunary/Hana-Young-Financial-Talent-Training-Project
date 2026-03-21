@@ -106,6 +106,7 @@ async def save_academic(
         db, user.id, body.model_dump()
     )
     await db.commit()
+    await db.refresh(record)
     return AcademicResponse.model_validate(record)
 
 
@@ -127,6 +128,7 @@ async def create_project(
 ) -> ProjectResponse:
     record = await evidence_repo.create_project(db, user.id, body.model_dump())
     await db.commit()
+    await db.refresh(record)
     return ProjectResponse.model_validate(record)
 
 
@@ -142,6 +144,7 @@ async def update_project(
         raise HTTPException(status_code=404, detail="프로젝트를 찾을 수 없습니다.")
     await evidence_repo.update_project(record, body.model_dump(exclude_unset=True))
     await db.commit()
+    await db.refresh(record)
     return ProjectResponse.model_validate(record)
 
 
@@ -176,6 +179,7 @@ async def create_internship(
 ) -> InternshipResponse:
     record = await evidence_repo.create_internship(db, user.id, body.model_dump())
     await db.commit()
+    await db.refresh(record)
     return InternshipResponse.model_validate(record)
 
 
@@ -191,6 +195,7 @@ async def update_internship(
         raise HTTPException(status_code=404, detail="인턴십 기록을 찾을 수 없습니다.")
     await evidence_repo.update_internship(record, body.model_dump(exclude_unset=True))
     await db.commit()
+    await db.refresh(record)
     return InternshipResponse.model_validate(record)
 
 
@@ -225,6 +230,7 @@ async def create_certification(
 ) -> CertificationResponse:
     record = await evidence_repo.create_certification(db, user.id, body.model_dump())
     await db.commit()
+    await db.refresh(record)
     return CertificationResponse.model_validate(record)
 
 
@@ -240,6 +246,7 @@ async def update_certification(
         raise HTTPException(status_code=404, detail="자격증을 찾을 수 없습니다.")
     await evidence_repo.update_certification(record, body.model_dump(exclude_unset=True))
     await db.commit()
+    await db.refresh(record)
     return CertificationResponse.model_validate(record)
 
 
@@ -274,6 +281,7 @@ async def create_education(
 ) -> EducationResponse:
     record = await evidence_repo.create_education(db, user.id, body.model_dump())
     await db.commit()
+    await db.refresh(record)
     return EducationResponse.model_validate(record)
 
 
@@ -289,6 +297,7 @@ async def update_education(
         raise HTTPException(status_code=404, detail="교육 이수 기록을 찾을 수 없습니다.")
     await evidence_repo.update_education(record, body.model_dump(exclude_unset=True))
     await db.commit()
+    await db.refresh(record)
     return EducationResponse.model_validate(record)
 
 
@@ -324,6 +333,8 @@ async def save_portfolio(
     link_dicts: list[dict[str, object]] = [link.model_dump() for link in body.links]
     records = await evidence_repo.replace_portfolio(db, user.id, link_dicts)
     await db.commit()
+    for r in records:
+        await db.refresh(r)
     return [PortfolioLinkResponse.model_validate(r) for r in records]
 
 
@@ -352,6 +363,7 @@ async def save_github(
     # TODO: Fetch GitHub API data in background task
     record = await evidence_repo.upsert_github_profile(db, user.id, data)
     await db.commit()
+    await db.refresh(record)
     return GitHubProfileResponse.model_validate(record)
 
 

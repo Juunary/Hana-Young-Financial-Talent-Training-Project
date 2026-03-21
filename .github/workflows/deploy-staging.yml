@@ -1,0 +1,115 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com
+
+jobs:
+  db-migration:
+    name: Run DB Migrations (Staging)
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@bd01e18f51369d5a26f1651c3cb451d3417e3bba # v5.4.1
+
+      - name: Run Alembic migrations
+        working-directory: apps/api
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: uv run alembic upgrade head
+
+  deploy:
+    name: Deploy to ECS (Staging)
+    needs: db-migration
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4.0.2
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy API service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@3e7310352de8b7b84ef5b89b56bd07a7c8a65e47 # v2.3.1
+        with:
+          task-definition: ${{ secrets.ECS_TASK_DEF_API_STAGING }}
+          service: skillfinance-api-staging
+          cluster: skillfinance-staging
+          image: ${{ env.ECR_REGISTRY }}/skillfinance-api:${{ github.sha }}
+          container-name: api
+          wait-for-service-stability: true
+
+      - name: Deploy Web service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@3e7310352de8b7b84ef5b89b56bd07a7c8a65e47 # v2.3.1
+        with:
+          task-definition: ${{ secrets.ECS_TASK_DEF_WEB_STAGING }}
+          service: skillfinance-web-staging
+          cluster: skillfinance-staging
+          image: ${{ env.ECR_REGISTRY }}/skillfinance-web:${{ github.sha }}
+          container-name: web
+          wait-for-service-stability: true
+
+      - name: Deploy AI Worker service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@3e7310352de8b7b84ef5b89b56bd07a7c8a65e47 # v2.3.1
+        with:
+          task-definition: ${{ secrets.ECS_TASK_DEF_WORKER_STAGING }}
+          service: skillfinance-ai-worker-staging
+          cluster: skillfinance-staging
+          image: ${{ env.ECR_REGISTRY }}/skillfinance-ai-worker:${{ github.sha }}
+          container-name: ai-worker
+          wait-for-service-stability: true
+
+  smoke-test:
+    name: Smoke Tests (Staging)
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Health check — API
+        run: |
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.STAGING_API_URL }}/api/v1/health")
+            if [ "$STATUS" = "200" ]; then
+              echo "API health check passed"
+              exit 0
+            fi
+            echo "Attempt $i failed (status=$STATUS), retrying..."
+            sleep 10
+          done
+          echo "API health check failed after 5 attempts"
+          exit 1
+
+      - name: Health check — Web
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.STAGING_WEB_URL }}/")
+          if [ "$STATUS" != "200" ]; then
+            echo "Web health check failed: $STATUS"
+            exit 1
+          fi
+          echo "Web health check passed"
+
+      - name: OpenAPI schema accessible
+        run: |
+          curl -sf "${{ secrets.STAGING_API_URL }}/api/v1/openapi.json" > /dev/null
+          echo "OpenAPI schema accessible"
