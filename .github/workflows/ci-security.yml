@@ -15,7 +15,11 @@ jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
+    # GitHub 레포 설정 > Security > Code scanning 활성화 필요.
+    # 비활성화 상태에서 에러로 블로킹되지 않도록 continue-on-error 적용.
+    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         language: [python, javascript-typescript]
     steps:
@@ -67,8 +71,7 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-        with:
-          version: "latest"
+        # version 미지정 → package.json의 packageManager 필드(pnpm@10.32.1) 자동 사용
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -92,7 +95,7 @@ jobs:
           fetch-depth: 0
 
       - name: TruffleHog scan
-        uses: trufflesecurity/trufflehog@6d84f88b0d55f2af0ef63faa2f21c97d1a7c3f52 # v3.88.27
+        uses: trufflesecurity/trufflehog@v3.88.27
         with:
           path: ./
           base: ${{ github.event.repository.default_branch }}
