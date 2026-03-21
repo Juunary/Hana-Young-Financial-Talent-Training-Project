@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { DemoLoginButton } from "@/components/DemoLoginButton";
+
 export default function LandingPage() {
   return (
     <div>
@@ -15,12 +17,7 @@ export default function LandingPage() {
           구조화·해석하여 보완적 신용평가 점수를 산출합니다.
         </p>
         <div className="mt-8 flex justify-center gap-4">
-          <Link
-            href="/auth/signup"
-            className="bg-brand-primary hover:bg-brand-primary-strong rounded-financial px-8 py-3 text-base font-semibold text-white transition-colors"
-          >
-            무료로 시작하기
-          </Link>
+          <DemoLoginButton />
           <Link
             href="/about"
             className="border-border text-foreground hover:bg-neutral-100 rounded-financial border px-8 py-3 text-base font-semibold transition-colors"

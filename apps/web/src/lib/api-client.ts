@@ -1,3 +1,5 @@
+import { isDemoMode, matchDemoRoute } from "./demo-data";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 interface ApiError {
@@ -16,13 +18,20 @@ class ApiClient {
   }
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
+    const method = options.method ?? "GET";
+
+    // Demo mode: return mock data without calling the real API
+    if (isDemoMode()) {
+      return matchDemoRoute(path, method) as T;
+    }
+
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       ...(options.headers as Record<string, string>),
     };
 
     // Add CSRF token for state-changing methods
-    if (this.csrfToken && ["POST", "PUT", "PATCH", "DELETE"].includes(options.method ?? "")) {
+    if (this.csrfToken && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
       headers["X-CSRF-Token"] = this.csrfToken;
     }
 

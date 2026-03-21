@@ -6,6 +6,7 @@ const AUTH_PATHS = ["/auth/login", "/auth/signup", "/auth/forgot-password"];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionId = request.cookies.get("session_id")?.value;
+  const isDemo = sessionId === "demo";
 
   // Public pages: always accessible
   if (PUBLIC_PATHS.includes(pathname)) {
@@ -14,7 +15,7 @@ export function middleware(request: NextRequest) {
 
   // Auth pages: redirect to dashboard if already logged in
   if (AUTH_PATHS.includes(pathname)) {
-    if (sessionId) {
+    if (sessionId || isDemo) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return NextResponse.next();

@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api } from "@/lib/api-client";
+import { disableDemoMode, isDemoMode } from "@/lib/demo-data";
 
 interface HeaderProps {
   userName?: string;
@@ -26,6 +27,11 @@ export function Header({ userName, userEmail, onMenuToggle, showMenuButton = tru
   const router = useRouter();
 
   const handleLogout = async () => {
+    if (isDemoMode()) {
+      disableDemoMode();
+      router.push("/");
+      return;
+    }
     try {
       await api.post("/api/v1/auth/logout");
     } catch {

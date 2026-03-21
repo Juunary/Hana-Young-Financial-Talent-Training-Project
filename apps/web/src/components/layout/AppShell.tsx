@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { isDemoMode } from "@/lib/demo-data";
+
 import { Header } from "./Header";
 import { SideNavigation } from "./SideNavigation";
 
@@ -14,11 +16,15 @@ interface AppShellProps {
 export function AppShell({ children, userName, userEmail }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const demo = isDemoMode();
+  const displayName = userName ?? (demo ? "체험 사용자" : undefined);
+  const displayEmail = userEmail ?? (demo ? "demo@hanayoung.kr" : undefined);
+
   return (
     <div className="bg-background min-h-screen">
       <Header
-        userName={userName}
-        userEmail={userEmail}
+        userName={displayName}
+        userEmail={displayEmail}
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
       />
       <SideNavigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
