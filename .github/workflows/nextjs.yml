@@ -1,93 +1,100 @@
-# Sample workflow for building and deploying a Next.js site to GitHub Pages
-#
-# To get started with Next.js see: https://nextjs.org/docs/getting-started
-#
-name: Deploy Next.js site to Pages
+name: Next.js Preview Deployment
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: ["main"]
+    branches: [main, develop]
+    paths:
+      - "apps/web/**"
+      - "packages/ui/**"
+      - "packages/config/**"
+      - "packages/types/**"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "apps/web/**"
+      - "packages/ui/**"
+      - "packages/config/**"
+      - "packages/types/**"
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  pull-requests: write  # PR에 미리보기 URL 댓글 작성용
 
 jobs:
-  # Build job
-  build:
+  deploy-preview:
+    name: Deploy to Vercel
     runs-on: ubuntu-latest
+    outputs:
+      preview_url: ${{ steps.deploy.outputs.preview-url }}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - name: Detect package manager
-        id: detect-package-manager
-        run: |
-          if [ -f "${{ github.workspace }}/yarn.lock" ]; then
-            echo "manager=yarn" >> $GITHUB_OUTPUT
-            echo "command=install" >> $GITHUB_OUTPUT
-            echo "runner=yarn" >> $GITHUB_OUTPUT
-            exit 0
-          elif [ -f "${{ github.workspace }}/package.json" ]; then
-            echo "manager=npm" >> $GITHUB_OUTPUT
-            echo "command=ci" >> $GITHUB_OUTPUT
-            echo "runner=npx --no-install" >> $GITHUB_OUTPUT
-            exit 0
-          else
-            echo "Unable to determine package manager"
-            exit 1
-          fi
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: ${{ steps.detect-package-manager.outputs.manager }}
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-        with:
-          # Automatically inject basePath in your Next.js configuration file and disable
-          # server side image optimization (https://nextjs.org/docs/api-reference/next/image#unoptimized).
-          #
-          # You may remove this line if you want to manage the configuration yourself.
-          static_site_generator: next
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            .next/cache
-          # Generate a new cache whenever packages or source files change.
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          # If source files changed but packages didn't, rebuild from a prior cache.
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
-      - name: Install dependencies
-        run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
-      - name: Build with Next.js
-        run: ${{ steps.detect-package-manager.outputs.runner }} next build
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./out
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-  # Deployment job
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        # package.json의 packageManager 필드 자동 사용
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Deploy to Vercel
+        id: deploy
+        uses: amondnet/vercel-action@16de52a678f322c2c4e693eb1b0cebe6754e456d # v25.2.0
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./apps/web
+          # main 브랜치는 프로덕션, 나머지는 미리보기
+          vercel-args: ${{ github.ref == 'refs/heads/main' && '--prod' || '' }}
+
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.preview-url }}';
+            const sha = context.payload.pull_request.head.sha.substring(0, 7);
+            const body = [
+              '## 🔗 Vercel 미리보기 배포',
+              '',
+              `| 항목 | 값 |`,
+              `|------|----|`,
+              `| **미리보기 URL** | ${url} |`,
+              `| **커밋** | \`${sha}\` |`,
+              `| **배포 시점** | ${new Date().toISOString()} |`,
+              '',
+              '> ⚠️ 이 환경은 프로토타입 시뮬레이션입니다. 백엔드 API 없이는 인증 이후 기능이 동작하지 않을 수 있습니다.',
+            ].join('\n');
+
+            // 기존 봇 댓글이 있으면 업데이트, 없으면 새로 작성
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Vercel 미리보기 배포')
+            );
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
