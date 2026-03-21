@@ -43,6 +43,9 @@ htmlcov/
 # Turbo
 .turbo/
 
+# Vercel
+.vercel/
+
 # Misc
 *.log
 *.tsbuildinfo
