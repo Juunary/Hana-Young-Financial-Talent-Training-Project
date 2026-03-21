@@ -12,7 +12,6 @@ import {
   LayoutDashboard,
   PlayCircle,
   ShieldCheck,
-  Upload,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -40,7 +39,6 @@ const evidenceNavItems: NavItem[] = [
   { label: "교육 이수", href: "/evidence/education", icon: <BookOpen className="h-4 w-4" /> },
   { label: "포트폴리오", href: "/evidence/portfolio", icon: <FileText className="h-4 w-4" /> },
   { label: "GitHub", href: "/evidence/github", icon: <Github className="h-4 w-4" /> },
-  { label: "파일 업로드", href: "/evidence/uploads", icon: <Upload className="h-4 w-4" /> },
 ];
 
 const evaluationNavItems: NavItem[] = [
